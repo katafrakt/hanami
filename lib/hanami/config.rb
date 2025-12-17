@@ -80,6 +80,27 @@ module Hanami
     #   @since 2.0.0
     setting :slices
 
+    # @!attribute [rw] extra_slices
+    #   Sets additional slices to load when the app is prepared or booted.
+    #
+    #   This is useful for including slices that are defined outside of the app's
+    #   `slices/` or `config/slices/` directories.
+    #
+    #   The keys are the slice names to use within the app, and the values are
+    #   the slice classes to register.
+    #
+    #   @example
+    #     config.extra_slices = {
+    #       admin: ExternalAdmin::Slice,
+    #       search: ExternalSearch::Slice
+    #     }
+    #
+    #   @return [Hash{Symbol => Class}]
+    #
+    #   @api public
+    #   @since 2.1.0
+    setting :extra_slices, default: {}
+
     # @!attribute [rw] shared_app_component_keys
     #   Sets the keys for the components to be imported from the app into all other slices.
     #

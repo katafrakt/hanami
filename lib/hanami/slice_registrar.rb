@@ -57,6 +57,8 @@ module Hanami
         .then { filter_slice_names(_1) }
         .each(&method(:load_slice))
 
+      load_extra_slices
+
       self
     end
 
@@ -113,6 +115,19 @@ module Hanami
         end
 
       register(slice_name, slice_class)
+    end
+
+    def load_extra_slices
+      # Only load extra slices if this registrar belongs to the app itself,
+      # not to individual slices. Otherwise the config is inherited and slice
+      # is attempted to be registered again. There is probably a better way to do that.
+      return unless parent.eql?(parent.app)
+
+      extra_slices_config = parent.config.extra_slices
+
+      extra_slices_config.each do |slice_name, slice_class|
+        register(slice_name, slice_class)
+      end
     end
 
     # Finds the path to the slice's definition file, if it exists, in the following order:
