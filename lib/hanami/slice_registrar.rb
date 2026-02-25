@@ -53,7 +53,9 @@ module Hanami
         .select(&:directory?)
         .map { _1.basename }
 
-      (slice_dirs + slice_configs).uniq.sort
+      extra_slices = parent.equal?(parent.app) ? parent.config.extra_slices.map(&:to_s) : []
+
+      (slice_dirs + slice_configs + extra_slices).uniq.sort
         .then { filter_slice_names(_1) }
         .each(&method(:load_slice))
 

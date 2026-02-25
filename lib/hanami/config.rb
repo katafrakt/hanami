@@ -81,6 +81,15 @@ module Hanami
     #   @since 2.0.0
     setting :slices
 
+    # @!attribute [rw] extra_slices
+    #  Provides additional slices (outside of application's slices and config/slices directories)
+    #  to be loaded every time the slices are reloaded. Each slice provided externally (i.e. via a gem)
+    #  needs to be listed here.
+    #
+    #  @api public
+    #  @since 2.4
+    setting :extra_slices, default: []
+
     # @!attribute [rw] shared_app_component_keys
     #   Sets the keys for the components to be imported from the app into all other slices.
     #
