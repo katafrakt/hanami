@@ -168,4 +168,87 @@ RSpec.describe "Slices / Slice loading", :app_integration, :aggregate_failures d
       end
     end
   end
+
+  describe "loading slices with config.extra_slices" do
+    describe "prepared app" do
+      it "loads a slice from extra_slices" do
+        with_tmp_directory(Dir.mktmpdir) do
+          write "config/app.rb", <<~RUBY
+            require "hanami"
+
+            module TestApp
+              class App < Hanami::App
+                config.extra_slices = %w[external_slice]
+              end
+            end
+          RUBY
+
+          write "slices/main/.keep"
+
+          write "gems/external_slice/external_slice.gemspec", <<~RUBY
+            Gem::Specification.new do |spec|
+              spec.name = "external_slice"
+              spec.version = "0.1.0"
+              spec.summary = "External slice"
+              spec.authors = ["Test"]
+            end
+          RUBY
+
+          write "gems/external_slice/lib/external_slice.rb", <<~RUBY
+            require "hanami"
+
+            module ExternalSlice
+              class Slice < Hanami::Slice
+                config.root = __dir__
+              end
+            end
+          RUBY
+
+          require "hanami/prepare"
+
+          expect(Hanami.app.slices.keys).to include :external_slice
+        end
+      end
+
+      it "honors config.slices precedence over config.extra_slices" do
+        with_tmp_directory(Dir.mktmpdir) do
+          write "config/app.rb", <<~RUBY
+            require "hanami"
+
+            module TestApp
+              class App < Hanami::App
+                config.slices = %w[main]
+                config.extra_slices = %w[external_slice]
+              end
+            end
+          RUBY
+
+          write "slices/main/.keep"
+
+          write "gems/external_slice/external_slice.gemspec", <<~RUBY
+            Gem::Specification.new do |spec|
+              spec.name = "external_slice"
+              spec.version = "0.1.0"
+              spec.summary = "External slice"
+              spec.authors = ["Test"]
+            end
+          RUBY
+
+          write "gems/external_slice/lib/external_slice.rb", <<~RUBY
+            require "hanami"
+
+            module ExternalSlice
+              class Slice < Hanami::Slice
+                config.root = __dir__
+              end
+            end
+          RUBY
+
+          require "hanami/prepare"
+
+          expect(Hanami.app.slices.keys).to eq [:main]
+        end
+      end
+    end
+  end
 end

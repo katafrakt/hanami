@@ -45,7 +45,7 @@ module Hanami
       super
     end
 
-    def load_slices
+    def load_slices # rubocop:disable Metrics/AbcSize
       slice_configs = root.join(CONFIG_DIR, SLICES_DIR).glob("*#{RB_EXT}")
         .map { _1.basename(RB_EXT) }
 
