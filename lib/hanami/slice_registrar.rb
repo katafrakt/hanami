@@ -109,6 +109,13 @@ module Hanami
 
       slice_class =
         begin
+          # for extra slices we act upon a convention of being able to require a slice file
+          if parent.equal?(parent.app) && parent.config.extra_slices.map(&:to_s).include?(slice_name.to_s)
+            gem_name = slice_name.to_s
+            require gem_name
+            require "#{gem_name}/slice"
+          end
+
           inflector.constantize("#{slice_module_name(slice_name)}#{MODULE_DELIMITER}Slice")
         rescue NameError => exception
           raise exception unless exception.name.to_s == inflector.camelize(slice_name) || exception.name.to_s == :Slice
