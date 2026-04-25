@@ -53,9 +53,17 @@ module Hanami
         .select(&:directory?)
         .map { _1.basename }
 
-      (slice_dirs + slice_configs).uniq.sort
+      external_slices = parent.app? ? parent.config.external_slices.map(&:to_s) : []
+
+      local_names = (slice_dirs + slice_configs).map(&:to_s)
+
+      detect_external_slice_collisions!(local_names, external_slices)
+
+      (local_names + external_slices).uniq.sort
         .then { filter_slice_names(_1) }
-        .each(&method(:load_slice))
+        .each { |name|
+          external_slices.include?(name) ? load_external_slice(name) : load_slice(name)
+        }
 
       self
     end
@@ -109,6 +117,30 @@ module Hanami
       parent.eql?(parent.app) ? Object : parent.namespace
     end
 
+    def detect_external_slice_collisions!(local_names, external_slices)
+      collisions = local_names & external_slices
+      return if collisions.empty?
+
+      raise SliceLoadError,
+        "slice(s) #{collisions.inspect} declared both locally " \
+        "(in slices/ or config/slices/) and as external — remove one"
+    end
+
+    def load_external_slice(slice_name)
+      require slice_name.to_s
+      slice_class = slice_class_const(slice_name)
+      register(slice_name, slice_class)
+    rescue LoadError => e
+      raise SliceLoadError,
+        "external slice '#{slice_name}' could not be required — " \
+        "is the gem in your Gemfile? (#{e.class}: #{e.message})"
+    rescue NameError => e
+      raise SliceLoadError,
+        "external slice '#{slice_name}' was required but " \
+        "#{inflector.camelize(slice_name)}::Slice is not defined " \
+        "(#{e.class}: #{e.message})"
+    end
+
     # Runs when a slice file has been found inside the app at `config/slices/[slice_name].rb`,
     # or when a slice directory exists at `slices/[slice_name]`.
     #
@@ -125,12 +157,16 @@ module Hanami
 
       slice_class =
         begin
-          inflector.constantize("#{slice_module_name(slice_name)}#{MODULE_DELIMITER}#{SLICE_CLASS_NAME}")
+          slice_class_const(slice_name)
         rescue NameError => exception
           raise exception unless exception.name.to_s == inflector.camelize(slice_name) || exception.name.to_s == :Slice
         end
 
       register(slice_name, slice_class)
+    end
+
+    def slice_class_const(slice_name)
+      inflector.constantize("#{slice_module_name(slice_name)}#{MODULE_DELIMITER}#{SLICE_CLASS_NAME}")
     end
 
     # Finds the path to the slice's definition file, if it exists, in the following order:
