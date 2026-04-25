@@ -80,6 +80,24 @@ module Hanami
     #   @since 2.0.0
     setting :slices
 
+    # @!attribute [rw] external_slices
+    #   Names of slices defined in external gems that should be loaded
+    #   alongside locally-defined slices. Each name MUST match a gem name
+    #   reachable via `require`. The gem MUST define `<Camelized>::Slice`, a
+    #   subclass of `Hanami::Slice`.
+    #
+    #   Only honored on the app-level config; setting this on a non-app slice
+    #   has no effect.
+    #
+    #   @example
+    #     config.external_slices = [:sysinfo]
+    #
+    #   @return [Array<Symbol, String>]
+    #
+    #   @api public
+    #   @since 3.0.0
+    setting :external_slices, default: []
+
     # @!attribute [rw] shared_app_component_keys
     #   Sets the keys for the components to be imported from the app into all other slices.
     #
