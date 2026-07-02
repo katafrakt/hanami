@@ -39,7 +39,15 @@ A complete Hanami app is composed of multiple gems. For a complete overview of c
 
 ### Security
 
-[unreleased]: https://github.com/hanami/hanami/compare/v3.0.0...HEAD
+[unreleased]: https://github.com/hanami/hanami/compare/v3.0.1...HEAD
+
+## [3.0.1] - 2026-07-03
+
+### Fixed
+
+- Only configure template for mailer classes if hanami-view is bundled. (@katafrakt in #1611)
+
+[3.0.1]: https://github.com/hanami/hanami/compare/v3.0.0...v3.0.1
 
 ## [3.0.0] - 2026-06-30
 
