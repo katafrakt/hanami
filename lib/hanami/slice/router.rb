@@ -22,6 +22,13 @@ module Hanami
       # @api private
       attr_reader :path_prefix
 
+      require "hanami/router/inspector"
+      class InternalInspector < Hanami::Router::Inspector
+        def routes
+          @routes.each
+        end
+      end
+
       # @api private
       def initialize(
         routes:,
@@ -35,6 +42,7 @@ module Hanami
         @inflector = inflector
         @middleware_stack = middleware_stack
         @resource_scope = []
+        kwargs[:inspector] = InternalInspector.new
         instance_eval(&blk)
         super(**kwargs, &routes)
       end
