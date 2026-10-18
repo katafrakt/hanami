@@ -92,6 +92,9 @@ module Hanami
     #   reachable via `require`. The gem MUST define `<Camelized>::Slice`, a
     #   subclass of `Hanami::Slice`.
     #
+    #   The slice's `config.root` is inferred from the location of the slice
+    #   class file, so gems do not need to set it themselves.
+    #
     #   Only honored on the app-level config; setting this on a non-app slice
     #   has no effect.
     #

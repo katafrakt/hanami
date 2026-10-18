@@ -30,10 +30,10 @@ RSpec.describe "Slices / External slices", :app_integration, :aggregate_failures
         RUBY
 
         write "lib/sysinfo/slice.rb", <<~'RUBY'
-          require "hanami/external_slice"
+          require "hanami/slice"
 
           module Sysinfo
-            class Slice < Hanami::ExternalSlice
+            class Slice < Hanami::Slice
             end
           end
         RUBY
@@ -69,10 +69,10 @@ RSpec.describe "Slices / External slices", :app_integration, :aggregate_failures
         RUBY
 
         write "lib/sysinfo/slice.rb", <<~'RUBY'
-          require "hanami/external_slice"
+          require "hanami/slice"
 
           module Sysinfo
-            class Slice < Hanami::ExternalSlice
+            class Slice < Hanami::Slice
             end
           end
         RUBY
@@ -124,10 +124,10 @@ RSpec.describe "Slices / External slices", :app_integration, :aggregate_failures
         RUBY
 
         write "lib/sysinfo/slice.rb", <<~'RUBY'
-          require "hanami/external_slice"
+          require "hanami/slice"
 
           module Sysinfo
-            class Slice < Hanami::ExternalSlice
+            class Slice < Hanami::Slice
             end
           end
         RUBY
@@ -174,10 +174,10 @@ RSpec.describe "Slices / External slices", :app_integration, :aggregate_failures
         RUBY
 
         write "lib/sysinfo/slice.rb", <<~'RUBY'
-          require "hanami/external_slice"
+          require "hanami/slice"
 
           module Sysinfo
-            class Slice < Hanami::ExternalSlice
+            class Slice < Hanami::Slice
             end
           end
         RUBY
@@ -279,10 +279,10 @@ RSpec.describe "Slices / External slices", :app_integration, :aggregate_failures
         RUBY
 
         write "lib/sysinfo/slice.rb", <<~'RUBY'
-          require "hanami/external_slice"
+          require "hanami/slice"
 
           module Sysinfo
-            class Slice < Hanami::ExternalSlice
+            class Slice < Hanami::Slice
             end
           end
         RUBY
@@ -317,13 +317,13 @@ RSpec.describe "Slices / External slices", :app_integration, :aggregate_failures
         RUBY
 
         # Subclass body sets config.root explicitly; the body runs after the
-        # ExternalSlice.inherited hook, so the body's value wins.
+        # root inference in Slice.inherited, so the body's value wins.
         write "lib/sysinfo/slice.rb", <<~'RUBY'
-          require "hanami/external_slice"
+          require "hanami/slice"
           require "pathname"
 
           module Sysinfo
-            class Slice < Hanami::ExternalSlice
+            class Slice < Hanami::Slice
               config.root = Pathname(__dir__).join("..")
             end
           end

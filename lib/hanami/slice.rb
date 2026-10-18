@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "pathname"
 require "zeitwerk"
 require "dry/system"
 
@@ -45,6 +46,8 @@ module Hanami
           build_container_and_autoloader
         end
       end
+
+      infer_external_root(subclass)
     end
 
     # Builds the slice's container and autoloader.
@@ -62,6 +65,25 @@ module Hanami
       # within a slice class body would otherwise leave the container with Dry System's default
       # registrar, which cannot build Hanami's slice-aware providers.
       @container.config.provider_registrar = ProviderRegistrar.for_slice(self)
+    end
+
+    # Infers `config.root` from the source location of the slice class, for slice classes defined
+    # outside the app itself (i.e. slices packaged in external gems).
+    # @api private
+    def self.infer_external_root(subclass)
+      return unless Hanami.app?
+      return if subclass.name.nil?
+
+      path, = Object.const_source_location(subclass.name)
+      return unless path && File.file?(path)
+
+      app_root = Hanami.app.root.to_s
+      return if path.start_with?(
+        "#{app_root}/#{CONFIG_DIR}/#{SLICES_DIR}/",
+        "#{app_root}/#{SLICES_DIR}/"
+      )
+
+      subclass.config.root ||= Pathname(File.dirname(path))
     end
 
     module ClassMethods

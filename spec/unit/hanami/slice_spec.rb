@@ -114,4 +114,73 @@ RSpec.describe Hanami::Slice, :app_integration do
       expect { subject.call({}) }.to raise_error(Hanami::NoRoutesDefinedError, "Could not handle this rack request because no routes are defined")
     end
   end
+
+  describe "external slice root inference" do
+    it "sets config.root to the directory of the subclassing file" do
+      Dir.mktmpdir do |dir|
+        slice_file = File.join(dir, "slice.rb")
+        File.write(slice_file, <<~RUBY)
+          require "hanami/slice"
+
+          module FakeGem
+            class Slice < Hanami::Slice
+            end
+          end
+        RUBY
+
+        load slice_file
+
+        expect(FakeGem::Slice.config.root).to eq(Pathname(dir))
+      ensure
+        Object.send(:remove_const, :FakeGem) if defined?(FakeGem)
+      end
+    end
+
+    it "lets the subclass body override config.root" do
+      Dir.mktmpdir do |dir|
+        slice_file = File.join(dir, "slice.rb")
+        override_root = File.join(dir, "elsewhere")
+        FileUtils.mkdir_p(override_root)
+
+        File.write(slice_file, <<~RUBY)
+          require "hanami/slice"
+
+          module FakeGem
+            class Slice < Hanami::Slice
+              config.root = #{override_root.inspect}
+            end
+          end
+        RUBY
+
+        load slice_file
+
+        expect(FakeGem::Slice.config.root).to eq(Pathname(override_root))
+      ensure
+        Object.send(:remove_const, :FakeGem) if defined?(FakeGem)
+      end
+    end
+
+    it "does not set config.root for slice classes defined in the app's own slice locations" do
+      Dir.mktmpdir do |dir|
+        slice_file = File.join(dir, "config", "slices", "main.rb")
+        FileUtils.mkdir_p(File.dirname(slice_file))
+        File.write(slice_file, <<~RUBY)
+          require "hanami/slice"
+
+          module Main
+            class Slice < Hanami::Slice
+            end
+          end
+        RUBY
+
+        allow(Hanami.app).to receive(:root).and_return(Pathname(dir))
+
+        load slice_file
+
+        expect(Main::Slice.config.root).to be_nil
+      ensure
+        Object.send(:remove_const, :Main) if defined?(Main)
+      end
+    end
+  end
 end
